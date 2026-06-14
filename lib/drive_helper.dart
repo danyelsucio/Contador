@@ -8,8 +8,8 @@ class DriveHelper {
   static final _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
-      'https://www.googleapis.com/auth/drive.readonly', // Para descargar plantillas
-      'https://www.googleapis.com/auth/drive.file',     // Para subir reportes
+      'https://www.googleapis.com/auth/drive.readonly',
+      'https://www.googleapis.com/auth/drive.file',
     ],
     serverClientId: '992297094453-c1rifg3mam23t7qkttkcasvgn9875998.apps.googleusercontent.com',
     clientId: '992297094453-orpa1aqaac72j19fu1u8bncgambr4ivj.apps.googleusercontent.com',
@@ -30,7 +30,7 @@ class DriveHelper {
     final driveApi = await getDriveApi();
     if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
 
-    final media = drive.Media(Stream.value(utf8.encode(contenido)), contenido.length);
+    final media = drive.Media(Stream.value(utf8.encode(contenido)), utf8.encode(contenido).length);
     final driveFile = drive.File()
       ..name = nombre
       ..mimeType = mimeType;
@@ -38,54 +38,59 @@ class DriveHelper {
     await driveApi.files.create(driveFile, uploadMedia: media);
   }
 
-  // 👑 MÉTODO NUEVO PARA DESCARGAR - ARREGLA EL ERROR 403
-  
-    static Future<Uint8List> descargarArchivo(String fileId) async {
-  final driveApi = await getDriveApi();
-  if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
+  static Future<Uint8List> descargarArchivo(String fileId) async {
+    final driveApi = await getDriveApi();
+    if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
 
-  final file = await driveApi.files.get(fileId, $fields: "mimeType, name") as drive.File;
-  final mimeType = file.mimeType ?? '';
+    final file = await driveApi.files.get(fileId, $fields: "mimeType, name") as drive.File;
+    final mimeType = file.mimeType ?? '';
 
-  late drive.Media media;
+    late drive.Media media;
 
-  if (mimeType.startsWith('application/vnd.google-apps')) {
-    String exportMimeType;
-    if (mimeType.contains('document')) {
-      exportMimeType = 'application/pdf';
-    } else if (mimeType.contains('spreadsheet')) {
-      exportMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    } else if (mimeType.contains('presentation')) {
-      exportMimeType = 'application/pdf';
+    if (mimeType.startsWith('application/vnd.google-apps')) {
+      String exportMimeType;
+      if (mimeType.contains('document')) {
+        exportMimeType = 'application/pdf';
+      } else if (mimeType.contains('spreadsheet')) {
+        exportMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      } else if (mimeType.contains('presentation')) {
+        exportMimeType = 'application/pdf';
+      } else {
+        exportMimeType = 'application/pdf';
+      }
+      
+      media = (await driveApi.files.export(fileId, exportMimeType))!;
+      
     } else {
-      exportMimeType = 'application/pdf';
-    }
-    
-    // 👑 FIX 1: Cast + ! porque export regresa Media?
-    media = (await driveApi.files.export(fileId, exportMimeType))!;
-    
-  } else {
-    // 👑 FIX 2: Cast porque get regresa Object
-    media = await driveApi.files.get(
-      fileId,
-      downloadOptions: drive.DownloadOptions.fullMedia,
-    ) as drive.Media;
-  }
-
-  final List<int> dataStore = [];
-  await for (final data in media.stream) {
-    dataStore.addAll(data);
-  }
-  return Uint8List.fromList(dataStore);
+      media = await driveApi.files.get(
+        fileId,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
     }
 
+    final List<int> dataStore = [];
+    await for (final data in media.stream) {
+      dataStore.addAll(data);
+    }
+    return Uint8List.fromList(dataStore);
+  }
+}
+
+// 👑 ESTA CLASE VA AQUÍ ABAJO, UNA SOLA VEZ
 class GoogleAuthClient extends http.BaseClient {
   final Map<String, String> _headers;
   final http.Client _client = http.Client();
+  
   GoogleAuthClient(this._headers);
   
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     return _client.send(request..headers.addAll(_headers));
+  }
+  
+  @override
+  void close() {
+    _client.close();
+    super.close();
   }
 }
