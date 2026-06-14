@@ -410,7 +410,7 @@ Future<void> _descargarPlantillas(BuildContext context) async {
     }
 
     final authHeaders = await account.authHeaders;
-    final client = GoogleAuthClient(authHeaders);
+    
     final driveApi = drive.DriveApi(client);
 
     final folderResult = await driveApi.files.list(
