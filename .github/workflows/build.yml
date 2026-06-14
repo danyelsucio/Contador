@@ -12,17 +12,15 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Instalar Flutter 3.22.0 forzado
+      - name: Instalar Flutter 3.22.2 con Dart 3.6.1
         run: |
-          git clone https://github.com/flutter/flutter.git --depth 1 --branch 3.22.0 $HOME/flutter
+          git clone https://github.com/flutter/flutter.git --depth 1 --branch 3.22.2 $HOME/flutter
           echo "$HOME/flutter/bin" >> $GITHUB_PATH
           echo "$HOME/flutter/bin/cache/dart-sdk/bin" >> $GITHUB_PATH
           
       - name: Verificar version instalada
         run: |
           export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
-          which flutter
-          which dart
           flutter --version
           dart --version
           
