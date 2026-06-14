@@ -409,9 +409,7 @@ Future<void> _descargarPlantillas(BuildContext context) async {
       return;
     }
 
-    final authHeaders = await account.authHeaders;
-    
-    final driveApi = drive.DriveApi(client);
+  
 
     final folderResult = await driveApi.files.list(
       q: "mimeType='application/vnd.google-apps.folder' and name='Plantillas' and trashed=false",
