@@ -39,46 +39,44 @@ class DriveHelper {
   }
 
   // 👑 MÉTODO NUEVO PARA DESCARGAR - ARREGLA EL ERROR 403
-  static Future<Uint8List> descargarArchivo(String fileId) async {
-    final driveApi = await getDriveApi();
-    if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
+  
+    static Future<Uint8List> descargarArchivo(String fileId) async {
+  final driveApi = await getDriveApi();
+  if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
 
-    // 1. Revisa qué tipo de archivo es
-    final file = await driveApi.files.get(fileId, $fields: "mimeType, name");
-    final mimeType = file.mimeType ?? '';
+  // 👑 AQUÍ ESTABA EL ERROR: FALTABA EL CAST A drive.File
+  final file = await driveApi.files.get(fileId, $fields: "mimeType, name") as drive.File;
+  final mimeType = file.mimeType ?? '';
 
-    drive.Media media;
+  drive.Media media;
 
-    // 2. Si es Google Doc/Sheet/Slide, usa export
-    if (mimeType.startsWith('application/vnd.google-apps')) {
-      String exportMimeType;
-      if (mimeType.contains('document')) {
-        exportMimeType = 'application/pdf'; // Doc -> PDF
-      } else if (mimeType.contains('spreadsheet')) {
-        exportMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; // Sheet -> XLSX
-      } else if (mimeType.contains('presentation')) {
-        exportMimeType = 'application/pdf'; // Slide -> PDF
-      } else {
-        exportMimeType = 'application/pdf';
-      }
-      
-      media = await driveApi.files.export(fileId, exportMimeType) as drive.Media;
-      
+  if (mimeType.startsWith('application/vnd.google-apps')) {
+    String exportMimeType;
+    if (mimeType.contains('document')) {
+      exportMimeType = 'application/pdf';
+    } else if (mimeType.contains('spreadsheet')) {
+      exportMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    } else if (mimeType.contains('presentation')) {
+      exportMimeType = 'application/pdf';
     } else {
-      // 3. Si es archivo normal PDF, JPG, etc, usa get
-      media = await driveApi.files.get(
-        fileId,
-        downloadOptions: drive.DownloadOptions.fullMedia,
-      ) as drive.Media;
+      exportMimeType = 'application/pdf';
     }
-
-    // 4. Convierte el stream a bytes
-    final List<int> dataStore = [];
-    await for (final data in media.stream) {
-      dataStore.addAll(data);
-    }
-    return Uint8List.fromList(dataStore);
+    
+    media = await driveApi.files.export(fileId, exportMimeType);
+    
+  } else {
+    media = await driveApi.files.get(
+      fileId,
+      downloadOptions: drive.DownloadOptions.fullMedia,
+    );
   }
+
+  final List<int> dataStore = [];
+  await for (final data in media.stream) {
+    dataStore.addAll(data);
+  }
+  return Uint8List.fromList(dataStore);
+    }
 }
 
 class GoogleAuthClient extends http.BaseClient {
