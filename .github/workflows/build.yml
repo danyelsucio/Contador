@@ -12,13 +12,17 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.22.0'
-          channel: 'stable'
-          cache: false  # AGREGA ESTA LÍNEA
-
-      - run: flutter doctor -v  # AGREGA ESTA LÍNEA PARA VERIFICAR
+      - name: Instalar Flutter 3.22.0 sin cache
+        run: |
+          git clone https://github.com/flutter/flutter.git -b 3.22.0 --depth 1 $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
+          echo "$HOME/flutter/bin/cache/dart-sdk/bin" >> $GITHUB_PATH
+          
+      - name: Verificar version
+        run: |
+          flutter --version
+          dart --version
+          
       - run: flutter pub get
       - run: flutter build apk --release
 
