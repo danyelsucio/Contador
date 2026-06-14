@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -66,8 +65,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
     if (_isBusy) return;
     _isBusy = true;
 
+    final allBytes = <int>[];
+    for (final Plane plane in image.planes) {
+      allBytes.addAll(plane.bytes);
+    }
+
     final inputImage = InputImage.fromBytes(
-      bytes: _concatenatePlanes(image.planes),
+      bytes: Uint8List.fromList(allBytes),
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: InputImageRotationValue.fromRawValue(_controller.description.sensorOrientation)?? InputImageRotation.rotation0deg,
@@ -84,14 +88,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
       });
     }
     _isBusy = false;
-  }
-
-  Uint8List _concatenatePlanes(List<Plane> planes) {
-    final WriteBuffer allBytes = WriteBuffer();
-    for (final Plane plane in planes) {
-      allBytes.putUint8List(plane.bytes);
-    }
-    return allBytes.done().buffer.asUint8List();
   }
 
   @override
