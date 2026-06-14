@@ -23,12 +23,14 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// FORZAR NDK EN TODOS LOS SUBPROYECTOS SIN afterEvaluate
+// PLAN C: FUERZA SDK 35 Y NDK EN TODOS LOS PLUGINS
 subprojects { subproject ->
-    if (subproject.plugins.hasPlugin('com.android.application') || 
-        subproject.plugins.hasPlugin('com.android.library')) {
-        subproject.android {
-            ndkVersion "25.1.893793"
+    afterEvaluate {
+        if (subproject.hasProperty('android')) {
+            subproject.android {
+                compileSdkVersion 35
+                ndkVersion "25.1.893793"
+            }
         }
     }
 }
