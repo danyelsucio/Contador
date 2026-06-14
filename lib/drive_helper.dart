@@ -44,11 +44,10 @@ class DriveHelper {
   final driveApi = await getDriveApi();
   if (driveApi == null) throw Exception('Login cancelado o sin permisos de Drive');
 
-  // 👑 AQUÍ ESTABA EL ERROR: FALTABA EL CAST A drive.File
   final file = await driveApi.files.get(fileId, $fields: "mimeType, name") as drive.File;
   final mimeType = file.mimeType ?? '';
 
-  drive.Media media;
+  late drive.Media media;
 
   if (mimeType.startsWith('application/vnd.google-apps')) {
     String exportMimeType;
@@ -62,13 +61,15 @@ class DriveHelper {
       exportMimeType = 'application/pdf';
     }
     
-    media = await driveApi.files.export(fileId, exportMimeType);
+    // 👑 FIX 1: Cast + ! porque export regresa Media?
+    media = (await driveApi.files.export(fileId, exportMimeType))!;
     
   } else {
+    // 👑 FIX 2: Cast porque get regresa Object
     media = await driveApi.files.get(
       fileId,
       downloadOptions: drive.DownloadOptions.fullMedia,
-    );
+    ) as drive.Media;
   }
 
   final List<int> dataStore = [];
@@ -77,7 +78,6 @@ class DriveHelper {
   }
   return Uint8List.fromList(dataStore);
     }
-}
 
 class GoogleAuthClient extends http.BaseClient {
   final Map<String, String> _headers;
