@@ -1,127 +1,28 @@
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+// 1. Importa los paquetes necesarios
+import 'package:image_picker/image_picker.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 
-late List<CameraDescription> cameras;
+// 2. Función para tomar foto y extraer texto
+Future<void> procesarImagen() async {
+  // Abre la cámara
+  final XFile? foto = await ImagePicker().pickImage(source: ImageSource.camera);
+  if (foto == null) return;
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Scanner',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(useMaterial3: true),
-      home: const ScannerScreen(),
-    );
-  }
-}
-
-class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
-
-  @override
-  State<ScannerScreen> createState() => _ScannerScreenState();
-}
-
-class _ScannerScreenState extends State<ScannerScreen> {
-  late CameraController _controller;
-  late TextRecognizer _textRecognizer;
-  String _scannedText = 'Apunta a un texto';
-  bool _isBusy = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-    _controller = CameraController(
-      cameras[0],
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-    _controller.initialize().then((_) {
-      if (!mounted) return;
-      setState(() {});
-      _controller.startImageStream(_processImage);
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _textRecognizer.close();
-    super.dispose();
-  }
-
-  Future<void> _processImage(CameraImage image) async {
-    if (_isBusy) return;
-    _isBusy = true;
-
-    final allBytes = <int>[];
-    for (final Plane plane in image.planes) {
-      allBytes.addAll(plane.bytes);
-    }
-
-    final inputImage = InputImage.fromBytes(
-      bytes: Uint8List.fromList(allBytes),
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: InputImageRotationValue.fromRawValue(_controller.description.sensorOrientation)?? InputImageRotation.rotation0deg,
-        format: InputImageFormat.nv21,
-        bytesPerRow: image.planes[0].bytesPerRow,
-      ),
-    );
-
-    final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
-
-    if (mounted) {
-      setState(() {
-        _scannedText = recognizedText.text.isEmpty? 'Apunta a un texto' : recognizedText.text;
-      });
-    }
-    _isBusy = false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_controller.value.isInitialized) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    return Scaffold(
-      body: Stack(
-        children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            child: CameraPreview(_controller),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              margin: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _scannedText,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-                maxLines: 10,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Crea el "detector" de texto
+  final textDetector = GoogleMlKit.vision.textRecognizer();
+  
+  // Prepara la imagen para el detector
+  final inputImage = InputImage.fromFile(File(foto.path));
+  
+  // ¡Procesa y extrae el texto!
+  final RecognizedText textoReconocido = await textDetector.processImage(inputImage);
+  
+  // Aquí tienes todo el texto: 
+  print(textoReconocido.text); 
+  
+  // Y puedes mostrar el resultado en un cuadro de texto seleccionable
+  // en tu interfaz para que el usuario copie lo que necesite.
+  
+  // No olvides cerrar el detector cuando ya no lo uses
+  textDetector.close();
 }
