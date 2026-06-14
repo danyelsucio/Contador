@@ -12,6 +12,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Remove preinstalled Flutter
+        run: sudo rm -rf /usr/local/bin/flutter /usr/local/bin/dart
+
       - name: Set up Flutter 3.22.3
         uses: subosito/flutter-action@v2
         with:
@@ -22,10 +25,9 @@ jobs:
       - name: Check Flutter version
         run: |
           which flutter
+          which dart
           flutter --version
-          
-      - name: Flutter doctor
-        run: flutter doctor -v
+          dart --version
 
       - run: flutter pub get
       - run: flutter build apk --release
