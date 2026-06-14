@@ -15,7 +15,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: false  # AGREGA ESTA LÍNEA
 
+      - run: flutter doctor -v  # AGREGA ESTA LÍNEA PARA VERIFICAR
       - run: flutter pub get
       - run: flutter build apk --release
 
