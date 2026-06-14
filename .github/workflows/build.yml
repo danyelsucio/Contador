@@ -35,7 +35,7 @@ jobs:
         run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
       - run: flutter build apk --release
-      - run: flutter build apk --release
+      
 
       - uses: actions/upload-artifact@v4
         with:
