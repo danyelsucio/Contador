@@ -6,9 +6,11 @@ class DriveHelper {
   //agregar web id
   static final _googleSignIn = GoogleSignIn(
     scopes: [
-    'email',
-    'https://www.googleapis.com/auth/drive.file', // 👑 Scope completo, no el corto
-    ],
+  'email',
+  'https://www.googleapis.com/auth/drive.readonly', // Para descargar plantillas
+  'https://www.googleapis.com/auth/drive.file',     // Para subir reportes
+],
+    
   // 👑 ID DEL WEB CLIENT NUEVO - ESTE DA EL ACCESS_TOKEN
     serverClientId: '992297094453-c1rifg3mam23t7qkttkcasvgn9875998.apps.googleusercontent.com',
     clientId: '992297094453-orpa1aqaac72j19fu1u8bncgambr4ivj.apps.googleusercontent.com', 
