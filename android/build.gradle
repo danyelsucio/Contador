@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.9.24'
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
@@ -23,6 +23,15 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(':app')
+    
+    // ESTE BLOQUE FORZA EL NDK EN TODOS LOS PLUGINS
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android {
+                ndkVersion "25.1.893793"
+            }
+        }
+    }
 }
 
 tasks.register("clean", Delete) {
