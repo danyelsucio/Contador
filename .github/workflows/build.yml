@@ -12,27 +12,20 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Instalar Flutter 3.22.2 con Dart 3.6.1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'  # ESTA SÍ TRAE DART 3.6.1
+          channel: 'stable'
+          cache: false
+          cache-key: 'flutter-3-22-3-nocache'
+
+      - name: Verificar version
         run: |
-          git clone https://github.com/flutter/flutter.git --depth 1 --branch 3.22.2 $HOME/flutter
-          echo "$HOME/flutter/bin" >> $GITHUB_PATH
-          echo "$HOME/flutter/bin/cache/dart-sdk/bin" >> $GITHUB_PATH
-          
-      - name: Verificar version instalada
-        run: |
-          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
           flutter --version
           dart --version
-          
-      - name: Flutter pub get
-        run: |
-          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
-          flutter pub get
-          
-      - name: Build APK
-        run: |
-          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
-          flutter build apk --release
+
+      - run: flutter pub get
+      - run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
