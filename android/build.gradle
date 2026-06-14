@@ -23,17 +23,15 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
-// FUERZA SDK 35 Y NDK SIN afterEvaluate
+// SOLO FORZAMOS NDK. El SDK se queda en cada plugin.
 subprojects { subproject ->
     subproject.plugins.withId('com.android.application') {
         subproject.android {
-            compileSdkVersion 35
             ndkVersion "25.1.893793"
         }
     }
     subproject.plugins.withId('com.android.library') {
         subproject.android {
-            compileSdkVersion 35
             ndkVersion "25.1.893793"
         }
     }
