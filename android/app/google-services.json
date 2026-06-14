@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "992297094453-1pdcpjt6e110hvlu64gb9ua7cvrs8tk4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.contador",
+            "certificate_hash": "88fca664a89dec505c85fd5fda8ca84044d246b2"
+          }
+        },
+        {
           "client_id": "992297094453-kk8d71kufoimlh8onei7fs9cqc68thle.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
