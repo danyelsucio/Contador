@@ -20,16 +20,15 @@ allprojects {
 rootProject.buildDir = '../build'
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(':app')
-    
-    // ESTE BLOQUE FORZA EL NDK EN TODOS LOS PLUGINS
-    afterEvaluate { project ->
-        if (project.hasProperty('android')) {
-            project.android {
-                ndkVersion "25.1.893793"
-            }
+}
+
+// FORZAR NDK EN TODOS LOS SUBPROYECTOS SIN afterEvaluate
+subprojects { subproject ->
+    if (subproject.plugins.hasPlugin('com.android.application') || 
+        subproject.plugins.hasPlugin('com.android.library')) {
+        subproject.android {
+            ndkVersion "25.1.893793"
         }
     }
 }
