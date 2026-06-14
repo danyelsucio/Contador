@@ -12,19 +12,29 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Instalar Flutter 3.22.0 sin cache
+      - name: Instalar Flutter 3.22.0 forzado
         run: |
-          git clone https://github.com/flutter/flutter.git -b 3.22.0 --depth 1 $HOME/flutter
+          git clone https://github.com/flutter/flutter.git --depth 1 --branch 3.22.0 $HOME/flutter
           echo "$HOME/flutter/bin" >> $GITHUB_PATH
           echo "$HOME/flutter/bin/cache/dart-sdk/bin" >> $GITHUB_PATH
           
-      - name: Verificar version
+      - name: Verificar version instalada
         run: |
+          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
+          which flutter
+          which dart
           flutter --version
           dart --version
           
-      - run: flutter pub get
-      - run: flutter build apk --release
+      - name: Flutter pub get
+        run: |
+          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
+          flutter pub get
+          
+      - name: Build APK
+        run: |
+          export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
+          flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
