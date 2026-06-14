@@ -15,19 +15,17 @@ jobs:
       - name: Remove preinstalled Flutter
         run: sudo rm -rf /usr/local/bin/flutter /usr/local/bin/dart
 
-      - name: Set up Flutter 3.22.3
+      - name: Set up Flutter 3.27.1
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.3'
+          flutter-version: '3.27.1'
           channel: 'stable'
           cache: false
 
       - name: Check Flutter version
         run: |
           which flutter
-          which dart
           flutter --version
-          dart --version
 
       - run: flutter pub get
       - run: flutter build apk --release
